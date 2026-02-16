@@ -1,29 +1,23 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Auth\AuthController;
-use App\Http\Controllers\Auth\GoogleController;
-use App\Http\Controllers\CategoryController;
-use App\Http\Controllers\SaleController;
 use App\Http\Controllers\ProductController;
-use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\SellerController;
 
-Route::get('/', function () {
-    return view('login');
+Route::get('/', [ProductController::class, 'index'])->name('home');
+
+Route::resource('products', ProductController::class);
+Route::get('/category/{category}', [ProductController::class, 'byCategory'])->name('products.byCategory');
+Route::post('/products/{product}/sale', [ProductController::class, 'recordSale'])->name('products.recordSale');
+
+Route::prefix('seller')->name('seller.')->group(function () {
+    Route::get('/login', [SellerController::class, 'showLoginForm'])->name('login');
+    Route::post('/login', [SellerController::class, 'login']);
+    Route::get('/register', [SellerController::class, 'showRegisterForm'])->name('register');
+    Route::post('/register', [SellerController::class, 'register']);
+    Route::post('/logout', [SellerController::class, 'logout'])->name('logout');
+    
+    Route::middleware('auth:seller')->group(function () {
+        Route::get('/dashboard', [SellerController::class, 'dashboard'])->name('dashboard');
+    });
 });
-Route::get('/Register', function () {
-    return view('register');
-})->name('show.register');
-
-Route::post('/login', [AuthController::class, 'login'])->name('login');
-Route::post('/register', [AuthController::class, 'register'])->name('register');
-
-Route::get('/auth/google', [GoogleController::class, 'redirect']);
-Route::get('/auth/google/callback', [GoogleController::class, 'callback']);
-
-Route::get('/dashboard', [DashboardController::class, 'index']);
-
-Route::get('/products', [ProductController::class, 'index']);
-Route::get('/products/create', [ProductController::class, 'create']);
-Route::get('/categories', [CategoryController::class, 'index']);
-Route::get('/sales', [SaleController::class, 'index']);
